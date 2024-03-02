@@ -1,85 +1,59 @@
-import javax.swing.*;
-import java.security.SecureRandom;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Random ;
-class DES {
-byte[] skey = new byte[1000];
-String skeyString;
-static byte[] raw;
-String inputMessage,encryptedData,decryptedMessage;
-public DES()
-{
-try
-{
-generateSymmetricKey();
-inputMessage=JOptionPane.showInputDialog(null,"Enter
-message to encrypt");
-byte[] ibyte = inputMessage.getBytes();
-byte[] ebyte=encrypt(raw, ibyte);
-String encryptedData = new String(ebyte);
-System.out.println("Encrypted message "+encryptedData);
-JOptionPane.showMessageDialog(null,"Encrypted Data
-"+"\n"+encryptedData);
-byte[] dbyte= decrypt(raw,ebyte);
-String decryptedMessage = new String(dbyte);
-System.out.println("Decrypted message
-"+decryptedMessage);
-JOptionPane.showMessageDialog(null,"Decrypted Data
-"+"\n"+decryptedMessage);
+#include <stdio.h>
+#include <stdint.h>
+
+// Initial and final permutation tables
+int initial_permutation[] = {58, 50, 42, 34, 26, 18, 10, 2,
+                             60, 52, 44, 36, 28, 20, 12, 4,
+                             62, 54, 46, 38, 30, 22, 14, 6,
+                             64, 56, 48, 40, 32, 24, 16, 8,
+                             57, 49, 41, 33, 25, 17, 9, 1,
+                             59, 51, 43, 35, 27, 19, 11, 3,
+                             61, 53, 45, 37, 29, 21, 13, 5,
+                             63, 55, 47, 39, 31, 23, 15, 7};
+
+int final_permutation[] = {40, 8, 48, 16, 56, 24, 64, 32,
+                           39, 7, 47, 15, 55, 23, 63, 31,
+                           38, 6, 46, 14, 54, 22, 62, 30,
+                           37, 5, 45, 13, 53, 21, 61, 29,
+                           36, 4, 44, 12, 52, 20, 60, 28,
+                           35, 3, 43, 11, 51, 19, 59, 27,
+                           34, 2, 42, 10, 50, 18, 58, 26,
+                           33, 1, 41, 9, 49, 17, 57, 25};
+
+// Function prototypes
+void performInitialPermutation(uint64_t *data);
+void performFinalPermutation(uint64_t *data);
+
+int main() {
+    // Example plaintext (64-bit)
+    uint64_t plaintext = 0x0123456789ABCDEF;
+
+    // Perform initial permutation
+    performInitialPermutation(&plaintext);
+
+    // Perform final permutation
+    performFinalPermutation(&plaintext);
+
+    // Output the result
+    printf("Encrypted text: %llx\n", plaintext);
+
+    return 0;
 }
-catch(Exception e)
-{
-System.out.println(e);
+
+void performInitialPermutation(uint64_t *data) {
+    uint64_t result = 0;
+    for (int i = 0; i < 64; i++) {
+        result <<= 1;
+        result |= ((*data >> (64 - initial_permutation[i])) & 1);
+    }
+    *data = result;
 }
-}
-void generateSymmetricKey() {
-try {
-Random r = new Random();
-int num = r.nextInt(10000);
-String knum = String.valueOf(num);
-byte[] knumb = knum.getBytes();
-skey=getRawKey(knumb);
-skeyString = new String(skey);
-System.out.println("DES Symmetric key = "+skeyString);
-}
-catch(Exception e)
-{
-System.out.println(e);
-}
-}
-private static byte[] getRawKey(byte[] seed) throws Exception
-{
-KeyGenerator kgen = KeyGenerator.getInstance("DES");
-SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-sr.setSeed(seed);
-kgen.init(56, sr);
-SecretKey skey = kgen.generateKey();
-raw = skey.getEncoded();
-return raw;
-}
-private static byte[] encrypt(byte[] raw, byte[] clear) throws
-Exception {
-SecretKeySpec skeySpec = new SecretKeySpec(raw,
-"DES");
-Cipher cipher = Cipher.getInstance("DES");
-cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-byte[] encrypted = cipher.doFinal(clear);
-return encrypted;
-}
-private static byte[] decrypt(byte[] raw, byte[] encrypted)
-throws Exception
-{
-SecretKeySpec skeySpec = new SecretKeySpec(raw,
-"DES");
-Cipher cipher = Cipher.getInstance("DES");
-cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-byte[] decrypted = cipher.doFinal(encrypted);
-return decrypted;
-}
-public static void main(String args[]) {
-DES des = new DES();
-}
+
+void performFinalPermutation(uint64_t *data) {
+    uint64_t result = 0;
+    for (int i = 0; i < 64; i++) {
+        result <<= 1;
+        result |= ((*data >> (64 - final_permutation[i])) & 1);
+    }
+    *data = result;
 }
